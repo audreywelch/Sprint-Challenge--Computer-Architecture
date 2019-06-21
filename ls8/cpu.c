@@ -82,11 +82,8 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       break;
 
     /*
-
       SPRINT CHALLENGE ADDITION -----------------------
-
     */
-
     case ALU_CMP:
 
       // Compare the values in 2 registers
@@ -94,18 +91,19 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       if (cpu->registers[regA] == cpu->registers[regB]) {
         // If equal, set the E flag to 1, otherwise, set it to 0
         // OR the current flag to set the last bit to 1
-        cpu->flag = cpu->flag | (1 << 0);
-        //cpu->flag = 00000001; >>>> don't need the whole number, only need the flag
-
+        //cpu->flag = cpu->flag | (1 << 0); >>>> don't need the whole number, only need the flag
+        cpu->flag = 0b00000001; 
+        
       } else if (cpu->registers[regA] < cpu->registers[regB]) {
         // If registerA is less than registerB, set the Less-than flag to 1, otherwise set it to 0
-        cpu->flag = cpu->flag | (1 << 2);
-        //cpu->flag = 00000100;
-
+        //cpu->flag = cpu->flag | (1 << 2);
+        cpu->flag = 0b00000100;
+        
       } else if (cpu->registers[regA] > cpu->registers[regB]) {
         // If register A is greater than registerB, set the Greater-than flag to 1, otherwise set it to 0
-        cpu->flag = cpu->flag | (1 << 1);
-        //cpu->flag = 00000010;
+        //cpu->flag = cpu->flag | (1 << 1);
+        cpu->flag = 0b00000010;
+        
       }
       break;
   }
@@ -239,7 +237,6 @@ void cpu_run(struct cpu *cpu)
 
         // Add the value in two registers and store the result in registerA
         alu(cpu, ALU_ADD, operandA, operandB);
-
         break;
 
 
@@ -267,17 +264,16 @@ void cpu_run(struct cpu *cpu)
       case JEQ:
 
         // If equal flag is set (true), jump to the address stored in the given register
-        if (cpu->flag == 1) {
+        if (cpu->flag == 0b00000001) {
           cpu->pc = cpu->registers[operandA];
           num_operands = -1;
         }
-
         break;
 
       case JNE:
 
         // If equal flag is clear (false), jump to the address stored in the given register
-        if (cpu->flag == 0) {
+        if (cpu->flag == 0b00000000) {
           cpu->pc = cpu->registers[operandA];
           num_operands = -1;
         }
@@ -294,6 +290,8 @@ void cpu_run(struct cpu *cpu)
         fprintf(stderr, "PC %02x: unknown instruction %02x\n", cpu->pc, ir);
         exit(3);
     }
+
+    //cpu->pc += num_operands + 1;
 
     // If it's not 1 / True
     if(!instruction_set_pc) {
@@ -315,13 +313,13 @@ void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers, clearing them to 0
   cpu->pc = 0;
-  cpu->flag = 4;
+  cpu->flag = 0;
 
   memset(cpu->registers, 0, sizeof(cpu->registers));
   memset(cpu->ram, 0, sizeof(cpu->ram));
 
   // Initialize SP (stack pointer)
-  cpu->registers[7] = 0xF4;
+  cpu->registers[SP] = 0xF4;
 
 }
 
