@@ -1,6 +1,6 @@
 #ifndef _CPU_H_
 #define _CPU_H_
-#define SP   7 // Points to the value at the top of the stack / most recently pushed
+#define SP 5 // Points to the value at the top of the stack / most recently pushed
 
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +32,14 @@ enum alu_op {
   ALU_CMP
 };
 
-// Instructions
+// Memory locations
+#define ADDR_PROGRAM_ENTRY 0x00 // Where programs start getting loaded
+#define ADDR_EMPTY_STACK 0xF4 // Where SP is on an empty stack
+
+// Flags
+#define FLAG_EQ 0b00000001
+#define FLAG_GT 0b00000010
+#define FLAG_LT 0b00000100
 
 // These use binary literals. If these aren't available with your compiler, hex
 // literals should be used.

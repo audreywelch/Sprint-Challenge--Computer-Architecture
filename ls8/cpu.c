@@ -89,20 +89,21 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       // Compare the values in 2 registers
       // flag register - 00000LGE
       if (cpu->registers[regA] == cpu->registers[regB]) {
-        // If equal, set the E flag to 1, otherwise, set it to 0
+        // If equal, set the E flag to 1, otherwise, set it to 0 - set the bit in the flags
         // OR the current flag to set the last bit to 1
-        //cpu->flag = cpu->flag | (1 << 0); >>>> don't need the whole number, only need the flag
-        cpu->flag = 0b00000001; 
+        cpu->flag = cpu->flag | (1 << 0); //>>>> don't need the whole number, only need the flag
+        //cpu->flag = 0b00000001; 
+        //cpu->flag |= FLAG_EQ;
         
       } else if (cpu->registers[regA] < cpu->registers[regB]) {
         // If registerA is less than registerB, set the Less-than flag to 1, otherwise set it to 0
-        //cpu->flag = cpu->flag | (1 << 2);
-        cpu->flag = 0b00000100;
-        
+        cpu->flag = cpu->flag | (1 << 2);
+        //cpu->flag = ~0b00000001;
+        //cpu->flag &= ~FLAG_EQ;
       } else if (cpu->registers[regA] > cpu->registers[regB]) {
-        // If register A is greater than registerB, set the Greater-than flag to 1, otherwise set it to 0
-        //cpu->flag = cpu->flag | (1 << 1);
-        cpu->flag = 0b00000010;
+         // If register A is greater than registerB, set the Greater-than flag to 1, otherwise set it to 0
+        cpu->flag = cpu->flag | (1 << 1);
+         //cpu->flag = 0b00000010;
         
       }
       break;
@@ -182,7 +183,7 @@ void cpu_run(struct cpu *cpu)
         cpu->pc = cpu->registers[operandA];
 
         // Account for later when we reset the PC
-        num_operands = -1;
+        //num_operands = -1;
 
         break;
 
@@ -257,25 +258,29 @@ void cpu_run(struct cpu *cpu)
         // Set the PC to the address stored in the given register, which is provided in the first operand
         cpu->pc = cpu->registers[operandA];
 
-        // Account for later when we reset the PC
-        num_operands = -1;
         break;
 
       case JEQ:
 
         // If equal flag is set (true), jump to the address stored in the given register
-        if (cpu->flag == 0b00000001) {
+        if (cpu->flag & FLAG_EQ) {
           cpu->pc = cpu->registers[operandA];
-          num_operands = -1;
+          
+        } else {
+          // Account for later when we reset the PC
+          //num_operands = -1;
+          instruction_set_pc = 0;
         }
         break;
 
       case JNE:
 
         // If equal flag is clear (false), jump to the address stored in the given register
-        if (cpu->flag == 0b00000000) {
+        if (!(cpu->flag & FLAG_EQ)) {
           cpu->pc = cpu->registers[operandA];
-          num_operands = -1;
+        } else {
+          //num_operands = -1;
+          instruction_set_pc = 0;
         }
         break;
 
@@ -299,7 +304,8 @@ void cpu_run(struct cpu *cpu)
       // Increment PC by the number of arguments that were passed to the instruction we just executed
       // We do this by shifting 6 bits and modding by 4 to access the 1st and 2nd bits of the IR, which indicate how many operands the previous instruction expected
       // Plus 1 because that is the size of the opcode itself
-      cpu->pc += num_operands + 1;
+      //cpu->pc += num_operands + 1;
+      cpu->pc += ((ir >> 6) & 0x3) + 1;
     }
   }
 }
@@ -313,13 +319,13 @@ void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers, clearing them to 0
   cpu->pc = 0;
-  cpu->flag = 0;
+  //cpu->flag = 0;
 
   memset(cpu->registers, 0, sizeof(cpu->registers));
   memset(cpu->ram, 0, sizeof(cpu->ram));
 
   // Initialize SP (stack pointer)
-  cpu->registers[SP] = 0xF4;
+  cpu->registers[SP] = ADDR_EMPTY_STACK; //0xF4;
 
 }
 
