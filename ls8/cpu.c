@@ -243,7 +243,11 @@ void cpu_run(struct cpu *cpu)
 
     case JMP: // Jump to the address stored in the given register
     
+      // Set the PC to the address stored in the given register, which is provided in the first operand
+      cpu->pc = cpu->registers[operandA];
 
+      // Account for later when we reset the PC
+      num_operands = -1;
 
       break;
 
