@@ -7,7 +7,7 @@
 SPRINT CHALLENGE:
 
  X Add the CMP instruction and `equal` flag
- _ Add the JMP instruction
+ X Add the JMP instruction
  _ Add the JEQ and JNE instructions
 
 */
@@ -80,6 +80,28 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       // Add the value in two registers and store the result in registerA
       cpu->registers[regA] = cpu->registers[regA] + cpu->registers[regB];
       break;
+
+    case ALU_CMP:
+
+      // Compare the values in 2 registers
+      // flag register - 00000LGE
+      if (cpu->registers[regA] == cpu->registers[regB]) {
+        // If equal, set the E flag to 1, otherwise, set it to 0
+        // OR the current flag to set the last bit to 1
+        cpu->flag = cpu->flag | (1 << 0);
+        //cpu->flag = 00000001;
+
+      } else if (cpu->registers[regA] < cpu->registers[regB]) {
+        // If registerA is less than registerB, set the Less-than flag to 1, otherwise set it to 0
+        cpu->flag = cpu->flag | (1 << 2);
+        //cpu->flag = 00000100;
+
+      } else if (cpu->registers[regA] > cpu->registers[regB]) {
+        // If register A is greater than registerB, set the Greater-than flag to 1, otherwise set it to 0
+        cpu->flag = cpu->flag | (1 << 1);
+        //cpu->flag = 00000010;
+
+      }
   }
 }
 
@@ -118,7 +140,7 @@ void cpu_run(struct cpu *cpu)
     // 1. Get the value of the current instruction (in address PC).
     unsigned char ir = cpu_ram_read(cpu, cpu->pc);
 
-    // 2. Figure out how many operands this next instruction requires
+    // 2. Figure out how many operands this next instruction requires by bitshifting to the right 6 bits
     unsigned int num_operands = (ir >> 6);
 
     // 3. Get the appropriate value(s) of the operands
@@ -217,28 +239,14 @@ void cpu_run(struct cpu *cpu)
 
       /*
 
-      SPRINT CHALLENGE ADDITIONS
+      SPRINT CHALLENGE ADDITIONS -----------------------
 
       */
 
      case CMP:
 
       // Compare the values in 2 registers
-      // flag register - 00000LGE
-      if (cpu->registers[operandA] == cpu->registers[operandB]) {
-        // If equal, set the E flag to 1, otherwise, set it to 0
-        cpu->flag = 00000001
-
-      } else if (cpu->registers[operandA] < cpu->registers[operandB]) {
-        // If registerA is less than registerB, set the Less-than flag to 1, otherwise set it to 0
-        cpu->flag = 00000100
-
-      } else if (cpu->registers[operandA] > cpu->registers[operandB]) {
-        // If register A is greater than registerB, set the Greater-than flag to 1, otherwise set it to 0
-        cpu->flag = 00000010
-
-      }
-
+      alu(cpu, ALU_CMP, operandA, operandB);
       break;
 
     case JMP: // Jump to the address stored in the given register
@@ -248,6 +256,24 @@ void cpu_run(struct cpu *cpu)
 
       // Account for later when we reset the PC
       num_operands = -1;
+
+      break;
+
+    case JEQ:
+
+      // If equal flag is set (true), jump to the address stored in the given register
+      if (cpu->flag == 00000001) {
+        cpu->pc = cpu->registers[operandA];
+      }
+
+      break;
+
+    case JNE:
+
+      // If equal flag is clear (false), jump to the address stored in the given register
+      if (cpu->flag == 00000000) {
+        cpu->pc = cpu->registers[operandA];
+      }
 
       break;
 
