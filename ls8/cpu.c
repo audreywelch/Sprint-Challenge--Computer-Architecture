@@ -3,6 +3,15 @@
 #include <string.h>
 #include <stdio.h>
 
+/*
+SPRINT CHALLENGE:
+
+ X Add the CMP instruction and `equal` flag
+ _ Add the JMP instruction
+ _ Add the JEQ and JNE instructions
+
+*/
+
 // Helper function to read a value from the specified index in RAM
 // Returns the read value
 // index = memory address register (mar)
@@ -100,8 +109,6 @@ void cpu_run(struct cpu *cpu)
 
   // Just so we don't have to type cpu-> every time
   // unsigned char *reg = cpu->reg;
-
-  // unsigned char *pc = cpu->pc;
 
   while (running) {
 
@@ -206,6 +213,45 @@ void cpu_run(struct cpu *cpu)
         alu(cpu, ALU_ADD, operandA, operandB);
 
         break;
+
+
+      /*
+
+      SPRINT CHALLENGE ADDITIONS
+
+      */
+
+     case CMP:
+
+      // Compare the values in 2 registers
+      // flag register - 00000LGE
+      if (cpu->registers[operandA] == cpu->registers[operandB]) {
+        // If equal, set the E flag to 1, otherwise, set it to 0
+        cpu->flag = 00000001
+
+      } else if (cpu->registers[operandA] < cpu->registers[operandB]) {
+        // If registerA is less than registerB, set the Less-than flag to 1, otherwise set it to 0
+        cpu->flag = 00000100
+
+      } else if (cpu->registers[operandA] > cpu->registers[operandB]) {
+        // If register A is greater than registerB, set the Greater-than flag to 1, otherwise set it to 0
+        cpu->flag = 00000010
+
+      }
+
+      break;
+
+    case JMP: // Jump to the address stored in the given register
+    
+
+
+      break;
+
+      /*
+
+      END OF SPRINT CHALLENGE ADDITIONS
+
+      */
 
       // Handle unknown instructions
       default:

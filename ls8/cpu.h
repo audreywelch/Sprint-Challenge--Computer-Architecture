@@ -8,12 +8,9 @@
 // Holds all information about the CPU
 // Type for a single unsigned byte is unsigned char
 struct cpu {
-  // TODO
+  
   // PC: Program Counter
   unsigned char pc;
-
-  // flag register
-  unsigned char flag;
 
   // registers (array): Instruction Register
   unsigned char registers[8];
@@ -21,12 +18,14 @@ struct cpu {
   // ram (array)
   unsigned char ram[256];
 
+  // flag register - 00000LGE
+  unsigned char flag;
+
 };
 
 // ALU operations
 enum alu_op {
 	ALU_MUL,
-	// Add more here
   ALU_ADD
 };
 
@@ -46,6 +45,8 @@ enum alu_op {
 #define SP   7 // Points to the value at the top of the stack / most recently pushed
 #define CALL 0b01010000
 #define RET  0b00010001
+#define CMP  0b10100111
+#define JMP  0b01010100
 
 // Function declarations
 
